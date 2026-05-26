@@ -168,6 +168,8 @@ src/
 
 **MCP as the interface.** MCP is how AI agents talk to external tools. Exposing the optimizer as an MCP server means any MCP-compatible agent (Claude, Cursor, custom agents) can use it as a tool in a larger workflow. This is exactly how StarSling's architecture works — agents that orchestrate tools to analyze and optimize CI.
 
+**Code quality as a practice, not a checkbox.** This project was informed by Mitchell Hashimoto's concept of "anti-slop sessions" - the cleanup phase after AI-assisted coding where you force yourself to understand every line, reorganize for clarity, and document decisions. Daniel [wrote about this](https://www.linkedin.com/in/worku/) as a practice he values. Every module in this codebase went through that pass: no dead code, no unexplained abstractions, no "it works so don't touch it" corners. The rule functions are deliberately simple, not because the problem is simple, but because the cleanup pass kept asking "does this need to be here?"
+
 ## Testing
 
 ```bash
