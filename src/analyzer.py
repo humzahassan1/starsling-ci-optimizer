@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from src.models import AnalysisReport, Finding
 from src.rules import ALL_RULES
+from src.llm import get_llm_analysis, is_llm_available
 
 
 def parse_workflow(yaml_content: str) -> dict:
@@ -18,15 +19,17 @@ def parse_workflow(yaml_content: str) -> dict:
 def analyze_workflow(
     yaml_content: str,
     workflow_name: str = "workflow.yml",
+    use_llm: bool = True,
 ) -> AnalysisReport:
     """Run all rules against a workflow and produce an analysis report.
 
     Args:
         yaml_content: Raw YAML string of the GitHub Actions workflow.
         workflow_name: Name of the workflow file for the report.
+        use_llm: Whether to run LLM analysis (requires ANTHROPIC_API_KEY).
 
     Returns:
-        AnalysisReport with all findings from the rule engine.
+        AnalysisReport with all findings from the rule engine and optional LLM analysis.
     """
     workflow = parse_workflow(yaml_content)
 
@@ -50,8 +53,16 @@ def analyze_workflow(
     severity_order = {"critical": 0, "warning": 1, "info": 2}
     all_findings.sort(key=lambda f: severity_order.get(f.severity.value, 99))
 
-    return AnalysisReport(
+    report = AnalysisReport(
         workflow_name=workflow_name,
         analyzed_at=datetime.now(timezone.utc),
         findings=all_findings,
     )
+
+    # Run LLM analysis if enabled and available
+    if use_llm and is_llm_available():
+        llm_result = get_llm_analysis(yaml_content, report)
+        if llm_result:
+            report.llm_analysis = llm_result
+
+    return report
